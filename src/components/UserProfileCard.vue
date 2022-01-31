@@ -30,7 +30,7 @@
           <div>
             <template v-if="user.id === currentUser.id">
               <router-link
-                :to="{ name: 'users', params: { id: user.id } }"
+                :to="{ name: 'user', params: { id: user.id } }"
                 class="btn btn-primary"
               >
                 Edit
@@ -39,17 +39,17 @@
             <template v-else>
               <button
                 v-if="isFollowed"
-                :to="{ name: 'users', params: { id: user.id } }"
+                :to="{ name: 'user', params: { id: user.id } }"
                 class="btn btn-primary"
-                @click.stop.prevent = "deleteFollow"
+                @click.stop.prevent="deleteFollow"
               >
                 取消追蹤
               </button>
               <button
                 v-else
-                :to="{ name: 'users', params: { id: user.id } }"
+                :to="{ name: 'user', params: { id: user.id } }"
                 class="btn btn-primary"
-                @click.stop.prevent = "addFollow"
+                @click.stop.prevent="addFollow"
               >
                 追蹤
               </button>
@@ -102,7 +102,7 @@ export default {
   data() {
     return {
       currentUser: dummyUser.currentUser,
-      isFollowed: this.initialIsFollowed
+      isFollowed: this.initialIsFollowed,
     };
   },
   methods: {
