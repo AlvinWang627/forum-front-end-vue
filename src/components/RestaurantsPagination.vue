@@ -9,7 +9,7 @@
         <router-link
           class="page-link"
           aria-label="Previous"
-          :to="{ name: restaurants, query: { categoryId, page: previousPage } }"
+          :to="{ name: 'restaurants', query: { categoryId, page: previousPage } }"
         >
           <span aria-hidden="true">&laquo;</span>
         </router-link>
@@ -23,7 +23,7 @@
       >
         <router-link
           class="page-link"
-          :to="{ name: restaurants, query: { page, categoryId } }"
+          :to="{ name: 'restaurants', query: { page, categoryId } }"
         >
           {{ page }}
         </router-link>
@@ -38,7 +38,7 @@
           class="page-link"
           aria-label="Next"
           :to="{
-            name: restaurants,
+            name: 'restaurants',
             query: { categoryId, page: nextPage },
           }"
         >

@@ -1,28 +1,42 @@
 <template>
   <div class="container py-5">
-    <UserProfileCard
-      :user="users"
-      :comments="comments"
-      :favoritedRestaurants="favoritedRestaurants"
-      :followers="followers"
-      :followings="followings"
-      :initialIsFollowed="isFollowed"
-    />
-    <div class="row">
-      <div class="col-md-4">
-        <UserFollowingsCard :followings="followings" />
-        <UserFollowersCard :followers="followers" />
-      </div>
-      <div class="col-md-8">
-        <UserCommentsCard :comments="comments" />
-        <UserFavoritedRestaurantsCard
-          :favoritedRestaurants="favoritedRestaurants"
+    <form @submit.stop.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          name="name"
+          class="form-control"
+          placeholder="Enter Name"
+          required
+          v-model="user.name"
         />
       </div>
-    </div>
+
+      <div class="form-group">
+        <label for="image">Image</label>
+        <img
+          v-if="user.image"
+          width="200"
+          height="200"
+          :src="user.image"
+          alt=""
+        />
+        <input
+          @change="handleFileChange"
+          id="image"
+          type="file"
+          name="image"
+          accept="image/*"
+          class="form-control-file"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
   </div>
 </template>
-
 
 
 <script>
@@ -1283,55 +1297,43 @@ const dummyData = {
   },
   isFollowed: false,
 };
-import UserProfileCard from "./../components/UserProfileCard";
-import UserFollowingsCard from "./../components/UserFollowingsCard";
-import UserFollowersCard from "./../components/UserFollowersCard";
-import UserCommentsCard from "./../components/UserCommentsCard";
-import UserFavoritedRestaurantsCard from "./../components/UserFavoritedRestaurantsCard";
 
 export default {
-  components: {
-    UserProfileCard,
-    UserFollowingsCard,
-    UserFollowersCard,
-    UserCommentsCard,
-    UserFavoritedRestaurantsCard,
-  },
   data() {
     return {
-      users: {
-        id: -1,
-        name: "root",
-        email: "",
-        isAdmin: true,
+      user: {
+        name: "",
         image: "",
-        createdAt: "",
       },
-      comments: [],
-      favoritedRestaurants: [],
-      followers: [],
-      followings: [],
-      isFollowed: false,
     };
   },
   created() {
-    this.fetehUsers();
+    const { id } = this.$route.params;
+    this.fetchUser(id);
   },
   methods: {
-    fetehUsers() {
-      (this.users = {
-        id: dummyData.profile.id,
-        name: dummyData.profile.name,
-        email: dummyData.profile.email,
-        image: dummyData.profile.image,
-        createdAt: dummyData.profile.createdAt,
-      }),
-        (this.comments = dummyData.profile.Comments),
-        (this.favoritedRestaurants = dummyData.profile.FavoritedRestaurants),
-        (this.followers = dummyData.profile.Followers),
-        (this.followings = dummyData.profile.Followings),
-        (this.isFollowed = dummyData.isFollowed);
+    fetchUser() {
+      const { profile } = dummyData;
+      this.user = {
+        name: profile.name,
+        image: profile.image,
+      };
     },
+    handleFileChange(e) {
+      const { files } = e.target;
+      if (files.length === 0) {
+        this.user.image = "";
+      } else {
+        const imageURL = window.URL.createObjectURL(files[0]);
+        this.user.image = imageURL;
+        console.log(imageURL);
+      }
+    },
+    handleSubmit(e) {
+      const form = e.target
+      const formData = new FormData(form)
+      console.log(formData)
+    }
   },
 };
 </script>

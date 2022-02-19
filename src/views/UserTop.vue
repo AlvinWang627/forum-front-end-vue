@@ -10,14 +10,14 @@
         </a>
         <h2>{{ user.name }}</h2>
         <span class="badge badge-secondary"
-          >追蹤人數：{{ user.FollowerCount }}</span
+          >追蹤人數：{{ user.followerCount }}</span
         >
         <p class="mt-3">
           <button
             type="button"
             class="btn btn-danger"
             v-if="user.isFollowed"
-            @click.stop.prevent="unFollow(user.id)"
+            @click.stop.prevent="deleteFollowing(user.id)"
           >
             取消追蹤
           </button>
@@ -25,7 +25,7 @@
             type="button"
             class="btn btn-primary"
             v-else
-            @click.stop.prevent="addFollow(user.id)"
+            @click.stop.prevent="addFollowing(user.id)"
           >
             追蹤
           </button>
@@ -38,52 +38,9 @@
 
 <script>
 import NavTabs from "./../components/NavTabs";
-const dummyData = {
-  users: [
-    {
-      id: 1,
-      name: "root",
-      email: "root@example.com",
-      password: "$2a$10$smXR5NmTCkpiuPSfkrPFhurxGAAl5V5hyqwwg3iUF3WFuUcWReGry",
-      isAdmin: true,
-      image:
-        "https://mymodernmet.com/wp/wp-content/uploads/2019/09/100k-ai-faces-8.jpg",
-      createdAt: "2022-01-25T14:32:24.000Z",
-      updatedAt: "2022-01-25T14:32:24.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-    {
-      id: 2,
-      name: "user1",
-      email: "user1@example.com",
-      password: "$2a$10$rsSdAN2DWwMV7l/TQWXbbORKuDDEcq0wg3Uz7gAxC.UOZqZIlrD6.",
-      isAdmin: false,
-      image:
-        "https://mymodernmet.com/wp/wp-content/uploads/2019/09/100k-ai-faces-3.jpg",
-      createdAt: "2022-01-25T14:32:24.000Z",
-      updatedAt: "2022-01-25T14:32:24.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-    {
-      id: 3,
-      name: "user2",
-      email: "user2@example.com",
-      password: "$2a$10$skrPvwkCeq1V8az7RSoPU.A8NPmIHXGWEtUjWzFm0SJUBK3kND0zK",
-      isAdmin: false,
-      image:
-        "https://mymodernmet.com/wp/wp-content/uploads/2019/09/100k-ai-faces-5.jpg",
-      createdAt: "2022-01-25T14:32:24.000Z",
-      updatedAt: "2022-01-25T14:32:24.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-  ],
-};
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
+
 export default {
   components: {
     NavTabs,
@@ -97,16 +54,72 @@ export default {
     this.fetchUsers();
   },
   methods: {
-    fetchUsers() {
-      this.users = dummyData.users;
+    async fetchUsers() {
+      try {
+        const { data } = await usersAPI.getTopUsers();
+        this.users = data.users.map((user) => ({
+          id: user.id,
+          name: user.name,
+          image: user.image,
+          followerCount: user.FollowerCount,
+          isFollowed: user.isFollowed,
+        }));
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法顯示users，請稍後在試",
+        });
+      }
     },
-    unFollow(id) {
-      this.users.filter((user) => user.id === id)[0].isFollowed = false;
-      this.users.filter((user) => user.id === id)[0].FollowerCount -= 1;
+    async addFollowing(userId) {
+      try {
+        const { data } = await usersAPI.addFollowing({ userId });
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        this.users = this.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          } else {
+            return {
+              ...user,
+              followerCount: user.followerCount + 1,
+              isFollowed: true,
+            };
+          }
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法加入追蹤，請稍後再試",
+        });
+      }
     },
-    addFollow(id) {
-      this.users.filter((user) => user.id === id)[0].isFollowed = true;
-      this.users.filter((user) => user.id === id)[0].FollowerCount += 1;
+    async deleteFollowing(userId) {
+      try {
+        const { data } = await usersAPI.deleteFollowing({ userId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.users = this.users.map((user) => {
+          if (user.id !== userId) {
+            return user;
+          } else {
+            return {
+              ...user,
+              followerCount: user.followerCount - 1,
+              isFollowed: false,
+            };
+          }
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法移除追蹤，請稍後再試",
+        });
+      }
     },
   },
 };

@@ -30,8 +30,9 @@
           <div>
             <template v-if="user.id === currentUser.id">
               <router-link
-                :to="{ name: 'user', params: { id: user.id } }"
+                :to="{ name: 'user-edit', params: { id: user.id } }"
                 class="btn btn-primary"
+                :initial-user="currentUser"
               >
                 Edit
               </router-link>
@@ -106,6 +107,9 @@ export default {
     };
   },
   methods: {
+    // fetchUser() {
+    //   this.currentUser = this.currentUser
+    // },
     addFollow() {
       this.isFollowed = true;
     },

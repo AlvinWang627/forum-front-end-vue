@@ -6,12 +6,12 @@ import Restaurants from '../views/Restaurants.vue'
 
 Vue.use(VueRouter)
 
-const routes = [ 
+const routes = [
   {
     // 輸入/時轉到restaurants路由
     path: '/',
     name: 'root',
-    redirect: '/restaurants'
+    redirect: '/signin'
   },
   {
     path: '/signin',
@@ -49,14 +49,56 @@ const routes = [
     component: () => import('../components/RestaurantDashboard.vue')
   },
   {
+    path: '/users/:id/edit',
+    name: 'user-edit',
+    component: () => import('../views/UserEdit.vue')
+  },
+
+  {
+    path: '/users/top',
+    name: 'users-top',
+    component: () => import('../views/UserTop.vue')
+  },
+  {
     path: '/users/:id',
     name: 'user',
     component: () => import('../views/User.vue')
   },
   {
-    path: '/users/top',
-    name: 'users-top',
-    component: () => import('../views/UserTop.vue')
+    path: '/admin',
+    exact: true,
+    redirect: 'admin/restaurants'
+  },
+  {
+    path: '/admin/users',
+    name: 'admin-users',
+    component: () => import('../views/AdminUsers.vue')
+
+  },
+  {
+    path: '/admin/restaurant/new',
+    name: 'admin-restaurant-new',
+    component: () => import('../views/AdminRestaurantNew.vue')
+  },
+  {
+    path: '/admin/restaurant/:id/edit',
+    name: 'admin-restaurant-edit',
+    component: () => import('../views/AdminRestaurantEdit.vue')
+  },
+  {
+    path: '/admin/restaurant/:id',
+    name: 'admin-restaurant',
+    component: () => import('../views/AdminRestaurant')
+  },
+  {
+    path: '/admin/restaurants',
+    name: 'admin-restaurants',
+    component: () => import('../views/AdminRestaurants')
+  },
+  {
+    path: '/admin/categories',
+    name: 'admin-categories',
+    component: () => import('../views/AdminCategories.vue')
   },
   {
     path: '*',
