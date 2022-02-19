@@ -47,8 +47,13 @@
               type="text"
               class="form-control"
             />
-            <span v-show="category.isEditing" class="cancel"
-            @click="handleCancel(category.id)"> ✕ </span>
+            <span
+              v-show="category.isEditing"
+              class="cancel"
+              @click="handleCancel(category.id)"
+            >
+              ✕
+            </span>
           </td>
           <td class="d-flex justify-content-between">
             <button
@@ -63,7 +68,9 @@
               v-show="category.isEditing"
               type="button"
               class="btn btn-link mr-2"
-              @click.stop.prevent="updateCategory({ categoryId: category.id, name: category.name})"
+              @click.stop.prevent="
+                updateCategory({ categoryId: category.id, name: category.name })
+              "
             >
               Save
             </button>
@@ -84,35 +91,10 @@
 <script>
 import AdminNav from "@/components/AdminNav";
 import { v4 as uuidv4 } from "uuid";
+import adminAPI from "./../apis/admin";
+import { Toast } from "./../utils/helpers";
+
 //  2. 定義暫時使用的資料
-const dummyData = {
-  categories: [
-    {
-      id: 1,
-      name: "中式料理",
-      createdAt: "2019-06-22T09:00:43.000Z",
-      updatedAt: "2019-06-22T09:00:43.000Z",
-    },
-    {
-      id: 2,
-      name: "日本料理",
-      createdAt: "2019-06-22T09:00:43.000Z",
-      updatedAt: "2019-06-22T09:00:43.000Z",
-    },
-    {
-      id: 3,
-      name: "義大利料理",
-      createdAt: "2019-06-22T09:00:43.000Z",
-      updatedAt: "2019-06-22T09:00:43.000Z",
-    },
-    {
-      id: 4,
-      name: "墨西哥料理",
-      createdAt: "2019-06-22T09:00:43.000Z",
-      updatedAt: "2019-06-22T09:00:43.000Z",
-    },
-  ],
-};
 
 export default {
   components: {
@@ -130,55 +112,106 @@ export default {
     this.fetchCategories();
   },
   methods: {
-    // 4. 定義 `fetchCategories` 方法，把 `dummyData` 帶入 Vue 物件
-    fetchCategories() {
-      this.categories = dummyData.categories.map((category) => ({
-        ...category,
-        isEditing: false,
-        naneCached:''
-      }));
+    //向後端請求categories進來
+    async fetchCategories() {
+      try {
+        const { data } = await adminAPI.categories.get();
+        this.categories = data.categories;
+        this.categories = this.categories.map((category) => ({
+          ...category,
+          isEditing: false,
+          nameCached: "",
+        }));
+      } catch (error) {
+        Toast({
+          icon: "error",
+          title: "請稍後再試",
+        });
+      }
     },
-    createCategory() {
+    //新增category
+    async createCategory() {
+      try {
+        const { data } = await adminAPI.categories.create({
+          name: this.newCategoryName,
+        });
+
+        console.log(data);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法新增",
+        });
+      }
       this.categories.push({
         id: uuidv4(),
         name: this.newCategoryName,
       });
       this.newCategoryName = "";
     },
-    deleteCategory(categoryId) {
-      this.categories = this.categories.filter(
-        (category) => category.id !== categoryId
-      );
-    },
-    toggleIsEditing(categoryId) {
-      this.categories = this.categories.map(category => {
-        if (category.id === categoryId) {
-          return{
-          ...category,
-          isEditing: !category.isEditing,
-          nameCached: category.name
-          }
+
+    async deleteCategory(categoryId) {
+      try {
+        const { data } = await adminAPI.categories.delete({ categoryId });
+        console.log(data);
+        if (data.status !== "success") {
+          throw new Error(data.message);
         }
-        return category
-      })
+
+        this.categories = this.categories.filter(
+          (category) => category.id !== categoryId
+        );
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法刪除，請稍後再試",
+        });
+      }
     },
-    updateCategory({categoryId, name}) {
-      this.toggleIsEditing(categoryId)
-      console.log(name)
+    async updateCategory({ categoryId, name }) {
+      try {
+        const { data } = await adminAPI.categories.update({ categoryId, name });
+
+        this.toggleIsEditing(categoryId);
+        if(data.status !== 'success') {
+          throw new Error(data.message)
+        }
+      } catch (error) {
+        Toast({
+          icon: "error",
+          title: "目前無法修改名稱，請稍後再試",
+        });
+      }
     },
+
+    toggleIsEditing(categoryId) {
+      this.categories = this.categories.map((category) => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            isEditing: !category.isEditing,
+            nameCached: category.name,
+          };
+        }
+        return category;
+      });
+    },
+
     handleCancel(categoryId) {
-      this.categories = this.categories.map(category => {
-        if(category.id === categoryId) {
+      this.categories = this.categories.map((category) => {
+        if (category.id === categoryId) {
           return {
             ...this.categories,
-            name: category.nameCached
-          }
+            name: category.nameCached,
+          };
         }
-        return category
-      })
-      this.toggleIsEditing(categoryId)
-    }
-
+        return category;
+      });
+      this.toggleIsEditing(categoryId);
+    },
   },
 };
 </script>
