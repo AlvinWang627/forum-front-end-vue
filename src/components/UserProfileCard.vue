@@ -28,7 +28,8 @@
             </li>
           </ul>
           <div>
-            <template v-if="user.id === currentUser.id">
+            <template v-if="currentUser.id">
+              <!-- v-if="user.id === currentUser.id" -->
               <router-link
                 :to="{ name: 'user-edit', params: { id: user.id } }"
                 class="btn btn-primary"
