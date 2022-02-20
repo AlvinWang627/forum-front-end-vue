@@ -21,88 +21,9 @@
 </template>
 
 <script>
-const dummyData = {
-  restaurant: {
-    id: 1,
-    name: "Leslie Emmerich",
-    tel: "(514) 550-9378",
-    address: "408 Auer Mount",
-    opening_hours: "08:00",
-    description:
-      "Eaque necessitatibus est veniam occaecati culpa reiciendis nam impedit.\nMagnam odit eum ad veniam molestiae.\nEos fuga sit sint ut porro ipsam explicabo et veniam.",
-    image:
-      "https://loremflickr.com/320/240/restaurant,food/?random=96.64371389184527",
-    viewCounts: 1,
-    createdAt: "2022-01-25T14:32:24.000Z",
-    updatedAt: "2022-01-29T13:05:23.000Z",
-    CategoryId: 4,
-    Category: {
-      id: 4,
-      name: "墨西哥料理",
-      createdAt: "2022-01-25T14:32:24.000Z",
-      updatedAt: "2022-01-25T14:32:24.000Z",
-    },
-    Comments: [
-      {
-        id: 1,
-        text: "Est delectus accusamus tenetur maxime qui voluptatem ducimus.",
-        UserId: 2,
-        RestaurantId: 1,
-        createdAt: "2022-01-25T14:32:24.000Z",
-        updatedAt: "2022-01-25T14:32:24.000Z",
-        User: {
-          id: 2,
-          name: "user1",
-          email: "user1@example.com",
-          password:
-            "$2a$10$rsSdAN2DWwMV7l/TQWXbbORKuDDEcq0wg3Uz7gAxC.UOZqZIlrD6.",
-          isAdmin: false,
-          image: null,
-          createdAt: "2022-01-25T14:32:24.000Z",
-          updatedAt: "2022-01-25T14:32:24.000Z",
-        },
-      },
-      {
-        id: 101,
-        text: "Deserunt alias magni delectus et eum sint optio.",
-        UserId: 2,
-        RestaurantId: 1,
-        createdAt: "2022-01-25T14:32:24.000Z",
-        updatedAt: "2022-01-25T14:32:24.000Z",
-        User: {
-          id: 2,
-          name: "user1",
-          email: "user1@example.com",
-          password:
-            "$2a$10$rsSdAN2DWwMV7l/TQWXbbORKuDDEcq0wg3Uz7gAxC.UOZqZIlrD6.",
-          isAdmin: false,
-          image: null,
-          createdAt: "2022-01-25T14:32:24.000Z",
-          updatedAt: "2022-01-25T14:32:24.000Z",
-        },
-      },
-      {
-        id: 51,
-        text: "Sequi id illo.",
-        UserId: 3,
-        RestaurantId: 1,
-        createdAt: "2022-01-25T14:32:24.000Z",
-        updatedAt: "2022-01-25T14:32:24.000Z",
-        User: {
-          id: 3,
-          name: "user2",
-          email: "user2@example.com",
-          password:
-            "$2a$10$skrPvwkCeq1V8az7RSoPU.A8NPmIHXGWEtUjWzFm0SJUBK3kND0zK",
-          isAdmin: false,
-          image: null,
-          createdAt: "2022-01-25T14:32:24.000Z",
-          updatedAt: "2022-01-25T14:32:24.000Z",
-        },
-      },
-    ],
-  },
-};
+import restaurantsAPI from "./../apis/restaurants";
+import { Toast } from "./../utils/helpers";
+
 export default {
   data() {
     return {
@@ -115,18 +36,41 @@ export default {
       },
     };
   },
+
   created() {
-    this.fetchRestaurant()
+    const restaurantId = this.$route.params.id;
+    this.fetchRestaurant(restaurantId);
+  },
+  beforeRouteUpdate(to, from, next) {
+    const { id: restaurantId } = to.params;
+    this.fetchRestaurant(restaurantId);
+    next();
   },
   methods: {
-    fetchRestaurant() {
-      this.restaurant = {
-        id: dummyData.restaurant.id,
-        name: dummyData.restaurant.name,
-        categoryName: dummyData.restaurant.Category.name,
-        commentsLength: dummyData.restaurant.Comments.length,
-        viewCounts: 0,
-      };
+    async fetchRestaurant(restaurantId) {
+      try {
+        const { data } = await restaurantsAPI.getRestaurant({ restaurantId });
+
+        if (data.status === "error") {
+          throw new Error(data.message);
+        }
+
+        const { id, name, Category, Comments, viewCounts } = data.restaurant;
+
+        this.restaurant = {
+          ...this.restaurant,
+          id,
+          name,
+          categoryName: Category ? Category.name : "未分類",
+          commentsLength: Comments.length,
+          viewCounts,
+        };
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法顯示餐廳資料，請稍後再試",
+        });
+      }
     },
   },
 };

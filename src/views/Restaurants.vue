@@ -84,7 +84,7 @@ export default {
           page,
           totalPage,
           prev,
-          next,
+          next, 
         } = response.data;
 
         this.restaurants = restaurants;

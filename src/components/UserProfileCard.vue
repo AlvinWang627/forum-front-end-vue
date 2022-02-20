@@ -32,7 +32,6 @@
               <router-link
                 :to="{ name: 'user-edit', params: { id: user.id } }"
                 class="btn btn-primary"
-                :initial-user="currentUser"
               >
                 Edit
               </router-link>
@@ -42,7 +41,7 @@
                 v-if="isFollowed"
                 :to="{ name: 'user', params: { id: user.id } }"
                 class="btn btn-primary"
-                @click.stop.prevent="deleteFollow"
+                @click.stop.prevent="deleteFollowing(user.id)"
               >
                 取消追蹤
               </button>
@@ -50,7 +49,7 @@
                 v-else
                 :to="{ name: 'user', params: { id: user.id } }"
                 class="btn btn-primary"
-                @click.stop.prevent="addFollow"
+                @click.stop.prevent="addFollowing(user.id)"
               >
                 追蹤
               </button>
@@ -63,16 +62,9 @@
 </template>
 
 <script>
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: "王大明",
-    email: "wang@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-};
+import userAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
+
 export default {
   props: {
     user: {
@@ -95,26 +87,55 @@ export default {
       type: Array,
       required: true,
     },
-    initialIsFollowed: {
+    initialIsfollowed: {
       type: Boolean,
+      required: true,
+    },
+    currentUser: {
+      type: Object,
       required: true,
     },
   },
   data() {
     return {
-      currentUser: dummyUser.currentUser,
-      isFollowed: this.initialIsFollowed,
+      isFollowed: this.initialIsfollowed,
     };
   },
-  methods: {
-    // fetchUser() {
-    //   this.currentUser = this.currentUser
-    // },
-    addFollow() {
-      this.isFollowed = true;
+  watch: {
+    initialIsfollowed(newValue) {
+      this.isFollowed = newValue;
     },
-    deleteFollow() {
-      this.isFollowed = false;
+  },
+  methods: {
+    async addFollowing(userId) {
+      try {
+        const { data } = await userAPI.addFollowing({ userId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.isFollowed = true;
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法追隨",
+        });
+      }
+    },
+    async deleteFollowing(userId) {
+      try {
+        const { data } = await userAPI.deleteFollowing({ userId });
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        this.isFollowed = false;
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法解除追隨",
+        });
+      }
     },
   },
 };

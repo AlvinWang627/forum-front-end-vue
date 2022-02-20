@@ -28,16 +28,12 @@
 <script>
 // import moment from 'moment'
 import { fromNowFilter } from "./../utils/mixins";
-const dummyData = {
-  createUser: {
-    id: 1,
-    name: "管理者",
-    email: "root@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-};
+import commentAPI from "./../apis/comments";
+import { Toast } from "./../utils/helpers";
+import {mapState} from 'vuex'
+
+
+
 export default {
   mixins: [fromNowFilter],
   props: {
@@ -46,16 +42,23 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      currentUser: dummyData.createUser,
-    };
+  computed: {
+    ...mapState(["currentUser"])
   },
   methods: {
-    handleDeleteButtonClick(commentId) {
+    async handleDeleteButtonClick(commentId) {
+      try {
+        const { data } = await commentAPI.deleteComment({ commentId });
+        console.log(data);
+        this.$emit("after-delete-comment", commentId);
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "目前無法刪除評論，請稍後再試",
+        });
+      }
       // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
       // 觸發父層事件 - $emit( '事件名稱' , 傳遞的資料 )
-      this.$emit('after-delete-comment', commentId)
     },
   },
 };

@@ -15,6 +15,9 @@
 
 <script>
 import { v4 as uuidv4 } from "uuid";
+import commentAPI from "./../apis/comments";
+import { Toast } from "./../utils/helpers";
+
 export default {
   props: {
     restaurantId: {
@@ -28,13 +31,25 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
-      this.$emit("after-create-comment", {
-        commentId: uuidv4(),
-        restaurantId: this.restaurantId,
-        text: this.text,
-      });
-      this.text = "";
+    async handleSubmit() {
+      try {
+        const { data } = await commentAPI.createComment({
+          restaurantId: this.restaurantId,
+          text: this.text,
+        });
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.$emit("after-create-comment", {
+          commentId: uuidv4(),
+          restaurantId: this.restaurantId,
+          text: this.text,
+        });
+        this.text = "";
+      } catch (error) {
+        Toast.fire({ icon: "error", title: "目前無法新增評論，請稍後再試" });
+      }
     },
   },
 };
