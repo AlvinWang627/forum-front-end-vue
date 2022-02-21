@@ -41,7 +41,6 @@ export default {
         headers: { authorization: `Bearer ${getToken()}` }
       })
     },
-
   },
   getRestaurants() {
     return apiHelper.get('/admin/restaurants', {
@@ -52,5 +51,16 @@ export default {
     return apiHelper.delete(`/admin/restaurants/${restaurantId}`, {
       headers: { authorization: `Bearer ${getToken()}` }
     })
+  },
+  users() {
+    return apiHelper.get('admin/users', {
+      headers: { authorization: `Bearer ${getToken()}` }
+    })
+  },
+  update({ userId, isAdmin }) {
+    return apiHelper.put(`admin/users/${userId}`, isAdmin, {
+      headers: { authorization: `Bearer ${getToken()}` }
+    })
   }
+
 }
