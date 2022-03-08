@@ -19,6 +19,7 @@
       :previous-page="previousPage"
       :next-page="nextPage"
     />
+    <div v-if="restaurants.length < 1">此類別目前無餐廳資料</div>
   </div>
 </template>
 
@@ -30,7 +31,6 @@ import RestaurantsPagination from "./../components/RestaurantsPagination";
 import restaurantsAPI from "./../apis/restaurants";
 
 import { Toast } from "./../utils/helpers";
-
 
 export default {
   components: {
@@ -52,7 +52,7 @@ export default {
   },
   //網頁created時，用route.query抓當前路由，回傳到fetch
   created() {
-    const { page='', categoryId="" } = this.$route.query;
+    const { page = "", categoryId = "" } = this.$route.query;
     this.fetchRestaurants({
       queryPage: page,
       queryCategoryId: categoryId,
@@ -84,7 +84,7 @@ export default {
           page,
           totalPage,
           prev,
-          next, 
+          next,
         } = response.data;
 
         this.restaurants = restaurants;
